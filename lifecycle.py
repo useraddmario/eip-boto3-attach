@@ -4,11 +4,15 @@ import boto3
 import logging
 from botocore.exceptions import ClientError
 import subprocess
+import os
 import pprint
 import json
 
+
+
 pp = pprint.PrettyPrinter(indent=4)
 SEARCHTERM = 'Jump'
+REGION = 'us-west-2'
 ec2 = boto3.client('ec2')
 asg = boto3.client('autoscaling')
 
@@ -23,6 +27,8 @@ logger = logging.getLogger()
 ####Generate a log file####
 subprocess.run(["touch", "boto3-init.log"])
 
+####Set Region####
+os.environ['AWS_DEFAULT_REGION'] = REGION
 
 def parse_jump_eip():
     ####Get Jump EIP AllocationId####
