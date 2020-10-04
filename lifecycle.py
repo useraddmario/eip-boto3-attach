@@ -9,18 +9,30 @@ import json
 
 pp = pprint.PrettyPrinter(indent=4)
 SEARCHTERM = 'Jump'
+ec2 = boto3.client('ec2')
+asg = boto3.client('autoscaling')
+
+####Init logging####
 LOG = 'boto3-init.log'
+logging.basicConfig(
+        filename='boto3-init.log',
+        level=logging.INFO,
+        format=f'%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger()
+
+####Generate a log file####
+subprocess.run(["touch", "boto3-init.log"])
+
 
 def parse_jump_eip():
     ####Get Jump EIP AllocationId####
     logger.info('Parsing EIP...')
 
-    ec2 = boto3.client('ec2')
     filters = [
         {'Name': 'domain', 'Values': ['vpc']}
     ]
     response = ec2.describe_addresses(Filters=filters)
-    p
+    
     #Iterate for SEARCHTERM and save 'AllocationId'
     allocid = ''
     for address in response['Addresses']:
@@ -34,7 +46,6 @@ def parse_jump_asg():
     ####Get Jump ASG####
     logger.info('Parsing ASG...')
     
-    asg = boto3.client('autoscaling')
     response = asg.describe_auto_scaling_groups()
 
     #Iterate for SEARCHTERM and save 'InstanceId'
@@ -58,19 +69,10 @@ def eip_associate(allocid, instanceid):
         logger.info(e)
 
 def main():
-    ####Generate a log file####
-    subprocess.run(["touch", "boto3-init.log"])
-
-    ####Add logging####
-    logging.basicConfig(
-        filename='boto3-init.log',
-        level=logging.INFO,
-        format=f'%(asctime)s %(levelname)s %(message)s')
-    logger = logging.getLogger()
     allocid = parse_jump_eip()
     instanceid = parse_jump_asg()
-    eip_associate(allocid, instanceid)
-    print(response)
+    response = eip_associate(allocid, instanceid)
+    print(response['AssociationId'])
 
 
 if __name__ == '__main__':
